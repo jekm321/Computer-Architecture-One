@@ -14,11 +14,11 @@ class CPU {
         this.ram = ram;
 
         this.reg = new Array(8).fill(0); // General-purpose registers R0-R7
-        
+
         // Special-purpose registers
         this.PC = 0; // Program Counter
     }
-    
+
     /**
      * Store value in memory address, useful for program loading
      */
@@ -70,26 +70,41 @@ class CPU {
         // right now.)
 
         // !!! IMPLEMENT ME
+        let IR = this.ram.read(this.PC);
 
         // Debugging output
-        //console.log(`${this.PC}: ${IR.toString(2)}`);
+        console.log(`${this.PC}: ${IR.toString(2)}`);
 
         // Get the two bytes in memory _after_ the PC in case the instruction
         // needs them.
 
         // !!! IMPLEMENT ME
+        let operandA = this.read.read(this.PC + 1);
+        let operandB = this.read.read(this.PC + 2);
 
         // Execute the instruction. Perform the actions for the instruction as
         // outlined in the LS-8 spec.
 
         // !!! IMPLEMENT ME
+        let counter = 0;
+        let binary = IR.toString(2);
+        let length = binary[0] + binary[1]
+        switch(length) {
+            case '10':
+                counter += 3;
+            case '01':
+                counter += 2;
+            default :
+                counter += 1;
+        }
 
         // Increment the PC register to go to the next instruction. Instructions
         // can be 1, 2, or 3 bytes long. Hint: the high 2 bits of the
         // instruction byte tells you how many bytes follow the instruction byte
         // for any particular instruction.
-        
+
         // !!! IMPLEMENT ME
+        this.PC += counter;
     }
 }
 
