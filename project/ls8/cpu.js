@@ -52,24 +52,33 @@ class CPU {
      *
      * op can be: ADD SUB MUL DIV INC DEC CMP
      */
+    // !!! IMPLEMENT ME
     alu(op, regA, regB) {
+        let index;
         switch (op) {
             case 'ADD':
-                regA = (parseInt(regA, 2) + parseInt(regB, 2)).toString(2);
-            case 'HLT':
-                this.stopClock();
-            case 'LDI':
-                let index = parseInt(regA, 2);
-                this.reg[index] = parseInt(regB, 2);
+                index = regA;
+                this.reg[index] = regA +regB;
             case 'MUL':
-                // !!! IMPLEMENT ME
-                regA = (parseInt(regA, 2) * parseInt(regB, 2)).toString(2);
-            case 'PRN':
-                let index = parseInt(regA, 2);
-                console.log(this.reg[index]);
+                index = regA;
+                this.reg[index] = regA * regB;
             default:
                 break;
         }
+    }
+
+    HLT() {
+        this.stopClock();
+    }
+
+    LDI(regA, regB) {
+        let index = regA;
+        this.reg[index] = regB;
+    }
+
+    PRN(regA) {
+        let index = regA;
+        console.log(this.reg[index]);
     }
 
     /**
@@ -91,19 +100,19 @@ class CPU {
         // needs them.
 
         // !!! IMPLEMENT ME
-        let operandA = this.read.read(this.PC + 1);
-        let operandB = this.read.read(this.PC + 2);
+        let operandA = this.ram.read(this.PC + 1);
+        let operandB = this.ram.read(this.PC + 2);
 
         // Execute the instruction. Perform the actions for the instruction as
         // outlined in the LS-8 spec.
 
         // !!! IMPLEMENT ME
         const table = {
-            10101000: () => this.alu('ADD', operandA, operandB),
-            00000001: () => this.alu('HLT'),
-            10011001: () => this.alu('LDI', operandA, operandB),
-            10101010: () => this.alu('MUL', operandA, operandB),
-            01000011: () => this.alu('PRN', operandA),
+            0b10101000: () => this.alu('ADD', operandA, operandB),
+            0b00000001: () => this.HLT(),
+            0b10011001: () => this.LDI(operandA, operandB),
+            0b10101010: () => this.alu('MUL', operandA, operandB),
+            0b01000011: () => this.PRN(operandA),
         }
 
         if (table[IR]) {
@@ -119,14 +128,17 @@ class CPU {
 
         // !!! IMPLEMENT ME
         let binary = IR.toString(2);
-        let length = binary[0] + binary[1]
+        let length = IR >> 6;
         switch (length) {
-            case '10':
+            case 2:
                 this.PC += 3;
-            case '01':
+                break;
+            case 1:
                 this.PC += 2;
+                break;
             default:
                 this.PC += 1;
+                break;
         }
     }
 }
