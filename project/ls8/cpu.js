@@ -54,14 +54,11 @@ class CPU {
      */
     // !!! IMPLEMENT ME
     alu(op, regA, regB) {
-        let index;
         switch (op) {
             case 'ADD':
-                index = regA;
-                this.reg[index] = regA +regB;
+                this.reg[regA] += this.reg[regB]
             case 'MUL':
-                index = regA;
-                this.reg[index] = regA * regB;
+                this.reg[regA] = this.reg[regA] * this.reg[regB];
             default:
                 break;
         }
@@ -72,8 +69,7 @@ class CPU {
     }
 
     LDI(regA, regB) {
-        let index = regA;
-        this.reg[index] = regB;
+        this.reg[regA] = regB;
     }
 
     PRN(regA) {
