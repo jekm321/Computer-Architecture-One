@@ -54,8 +54,20 @@ class CPU {
      */
     alu(op, regA, regB) {
         switch (op) {
+            case 'ADD':
+                regA = (parseInt(regA, 2) + parseInt(regB, 2)).toString(2);
+            case 'HLT':
+                this.stopClock();
+            case 'LDI':
+                let index = parseInt(regA, 2);
+                this.reg[index] = parseInt(regB, 2);
             case 'MUL':
                 // !!! IMPLEMENT ME
+                regA = (parseInt(regA, 2) * parseInt(regB, 2)).toString(2);
+            case 'PRN':
+                let index = parseInt(regA, 2);
+                console.log(this.reg[index]);
+            default:
                 break;
         }
     }
@@ -86,16 +98,18 @@ class CPU {
         // outlined in the LS-8 spec.
 
         // !!! IMPLEMENT ME
-        let counter = 0;
-        let binary = IR.toString(2);
-        let length = binary[0] + binary[1]
-        switch(length) {
-            case '10':
-                counter += 3;
-            case '01':
-                counter += 2;
-            default :
-                counter += 1;
+        const table = {
+            10101000: () => this.alu('ADD', operandA, operandB),
+            00000001: () => this.alu('HLT'),
+            10011001: () => this.alu('LDI', operandA, operandB),
+            10101010: () => this.alu('MUL', operandA, operandB),
+            01000011: () => this.alu('PRN', operandA),
+        }
+
+        if (table[IR]) {
+            table[IR]();
+        } else {
+            console.log(IR.toString(2));
         }
 
         // Increment the PC register to go to the next instruction. Instructions
@@ -104,7 +118,16 @@ class CPU {
         // for any particular instruction.
 
         // !!! IMPLEMENT ME
-        this.PC += counter;
+        let binary = IR.toString(2);
+        let length = binary[0] + binary[1]
+        switch (length) {
+            case '10':
+                this.PC += 3;
+            case '01':
+                this.PC += 2;
+            default:
+                this.PC += 1;
+        }
     }
 }
 
