@@ -123,7 +123,6 @@ class CPU {
         // for any particular instruction.
 
         // !!! IMPLEMENT ME
-        let binary = IR.toString(2);
         let length = IR >> 6;
         switch (length) {
             case 2:
