@@ -73,8 +73,12 @@ class CPU {
     }
 
     PRN(regA) {
-        let index = regA;
-        console.log(this.reg[index]);
+        console.log(this.reg[regA]);
+    }
+
+    CALL(regA, regB) {
+        this.PUSH(regB)
+        this.PC = this.reg[regA];
     }
 
     /**
@@ -109,6 +113,7 @@ class CPU {
             0b10011001: () => this.LDI(operandA, operandB),
             0b10101010: () => this.alu('MUL', operandA, operandB),
             0b01000011: () => this.PRN(operandA),
+            0b01001000: () => this.CALL(operandA, operandB),
         }
 
         if (table[IR]) {
