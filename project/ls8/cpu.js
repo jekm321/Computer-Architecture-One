@@ -14,7 +14,8 @@ class CPU {
         this.ram = ram;
 
         this.reg = new Array(8).fill(0); // General-purpose registers R0-R7
-
+        const SP = 7;
+        this.reg[SP] = 244;
         // Special-purpose registers
         this.PC = 0; // Program Counter
     }
@@ -72,14 +73,24 @@ class CPU {
         this.reg[regA] = regB;
     }
 
+    POP(regA) {
+        this.reg[regA] = this.ram.read[this.reg[SP]];
+        this.reg[7]++;
+    }
+
     PRN(regA) {
         console.log(this.reg[regA]);
     }
 
-    CALL(regA, regB) {
-        this.PUSH(regB)
-        this.PC = this.reg[regA];
+    PUSH(regA) {
+        this.reg[SP]--;
+        this.ram.write(this.reg[SP], this.reg[regA]);
     }
+
+    // CALL(regA, regB) {
+    //     this.PUSH(regB)
+    //     this.PC = this.reg[regA];
+    // }
 
     /**
      * Advances the CPU one cycle
@@ -113,7 +124,8 @@ class CPU {
             0b10011001: () => this.LDI(operandA, operandB),
             0b10101010: () => this.alu('MUL', operandA, operandB),
             0b01000011: () => this.PRN(operandA),
-            0b01001000: () => this.CALL(operandA, operandB),
+            0b01001101: () => this.PUSH(operandA),
+            // 0b01001000: () => this.CALL(operandA, operandB),
         }
 
         if (table[IR]) {
