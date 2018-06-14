@@ -14,6 +14,8 @@ class CPU {
         this.ram = ram;
 
         this.reg = new Array(8).fill(0); // General-purpose registers R0-R7
+        this.operandA = null;
+        this.operandB = null;
         const SP = 7;
         this.reg[SP] = 244;
         // Special-purpose registers
@@ -57,9 +59,9 @@ class CPU {
     alu(op, regA, regB) {
         switch (op) {
             case 'ADD':
-                this.reg[regA] += this.reg[regB]
+                this.reg[this.operandA] += this.reg[this.operandB]
             case 'MUL':
-                this.reg[regA] = this.reg[regA] * this.reg[regB];
+                this.reg[this.operandA] = this.reg[this.operandA] * this.reg[this.operandB];
             default:
                 break;
         }
@@ -69,22 +71,22 @@ class CPU {
         this.stopClock();
     }
 
-    LDI(regA, regB) {
-        this.reg[regA] = regB;
+    LDI() {
+        this.reg[this.operandA] = this.operandB;
     }
 
-    POP(regA) {
-        this.reg[regA] = this.ram.read[this.reg[SP]];
+    POP() {
+        this.reg[this.operandA] = this.ram.read[this.reg[SP]];
         this.reg[7]++;
     }
 
-    PRN(regA) {
-        console.log(this.reg[regA]);
+    PRN() {
+        console.log(this.reg[this.operandA]);
     }
 
-    PUSH(regA) {
+    PUSH() {
         this.reg[SP]--;
-        this.ram.write(this.reg[SP], this.reg[regA]);
+        this.ram.write(this.reg[SP], this.reg[this.operandA]);
     }
 
     // CALL(regA, regB) {
@@ -111,21 +113,22 @@ class CPU {
         // needs them.
 
         // !!! IMPLEMENT ME
-        let operandA = this.ram.read(this.PC + 1);
-        let operandB = this.ram.read(this.PC + 2);
+        this.operandA = this.ram.read(this.PC + 1);
+        this.operandB = this.ram.read(this.PC + 2);
 
         // Execute the instruction. Perform the actions for the instruction as
         // outlined in the LS-8 spec.
 
         // !!! IMPLEMENT ME
         const table = {
-            0b10101000: () => this.alu('ADD', operandA, operandB),
+            0b10101000: () => this.alu('ADD'),
             0b00000001: () => this.HLT(),
-            0b10011001: () => this.LDI(operandA, operandB),
-            0b10101010: () => this.alu('MUL', operandA, operandB),
-            0b01000011: () => this.PRN(operandA),
-            0b01001101: () => this.PUSH(operandA),
-            // 0b01001000: () => this.CALL(operandA, operandB),
+            0b10011001: () => this.LDI(),
+            0b10101010: () => this.alu('MUL'),
+            0b01001100: () => this.POP(),
+            0b01000011: () => this.PRN(),
+            0b01001101: () => this.PUSH(),
+            // 0b01001000: () => this.CALL(),
         }
 
         if (table[IR]) {
