@@ -5,6 +5,9 @@
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
+
+const SP = 7;
+
 class CPU {
 
     /**
@@ -14,12 +17,15 @@ class CPU {
         this.ram = ram;
 
         this.reg = new Array(8).fill(0); // General-purpose registers R0-R7
+
         this.operandA = null;
         this.operandB = null;
-        const SP = 7;
+
         this.reg[SP] = 244;
+
         // Special-purpose registers
         this.PC = 0; // Program Counter
+        this.PCmoved = false;
     }
 
     /**
@@ -59,12 +65,20 @@ class CPU {
     alu(op, regA, regB) {
         switch (op) {
             case 'ADD':
-                this.reg[this.operandA] += this.reg[this.operandB]
+                this.reg[this.operandA] = this.reg[this.operandA] + this.reg[this.operandB];
+                break;
             case 'MUL':
                 this.reg[this.operandA] = this.reg[this.operandA] * this.reg[this.operandB];
+                break;
             default:
                 break;
         }
+    }
+
+    CALL() {
+        this.PUSH(this.PC + 2);
+        this.PC = this.reg[this.operandA];
+        this.PCmoved = true;
     }
 
     HLT() {
@@ -76,27 +90,34 @@ class CPU {
     }
 
     POP() {
-        this.reg[this.operandA] = this.ram.read[this.reg[SP]];
-        this.reg[7]++;
+        this.reg[this.operandA] = this.ram.read(this.reg[SP]);
+        this.reg[SP]++;
+        return this.ram.read(this.reg[SP] - 1);
+
     }
 
     PRN() {
         console.log(this.reg[this.operandA]);
     }
 
-    PUSH() {
+    PUSH(thing) {
         this.reg[SP]--;
-        this.ram.write(this.reg[SP], this.reg[this.operandA]);
+        if (thing || thing === 0) {
+            this.ram.write(this.reg[SP], thing)
+        } else {
+            this.ram.write(this.reg[SP], this.reg[this.operandA]);
+        }
     }
 
-    // CALL(regA, regB) {
-    //     this.PUSH(regB)
-    //     this.PC = this.reg[regA];
-    // }
+    RET() {
+        this.PC = this.POP();
+        this.PCmoved = true;
+    }
 
     /**
      * Advances the CPU one cycle
-     */
+    */
+
     tick() {
         // Load the instruction register (IR--can just be a local variable here)
         // from the memory address pointed to by the PC. (I.e. the PC holds the
@@ -105,7 +126,7 @@ class CPU {
 
         // !!! IMPLEMENT ME
         let IR = this.ram.read(this.PC);
-
+        this.PCmoved = false;
         // Debugging output
         console.log(`${this.PC}: ${IR.toString(2)}`);
 
@@ -122,13 +143,14 @@ class CPU {
         // !!! IMPLEMENT ME
         const table = {
             0b10101000: () => this.alu('ADD'),
+            0b10101010: () => this.alu('MUL'),
+            0b01001000: () => this.CALL(),
             0b00000001: () => this.HLT(),
             0b10011001: () => this.LDI(),
-            0b10101010: () => this.alu('MUL'),
             0b01001100: () => this.POP(),
             0b01000011: () => this.PRN(),
             0b01001101: () => this.PUSH(),
-            // 0b01001000: () => this.CALL(),
+            0b00001001: () => this.RET(),
         }
 
         if (table[IR]) {
@@ -143,17 +165,19 @@ class CPU {
         // for any particular instruction.
 
         // !!! IMPLEMENT ME
-        let length = IR >> 6;
-        switch (length) {
-            case 2:
-                this.PC += 3;
-                break;
-            case 1:
-                this.PC += 2;
-                break;
-            default:
-                this.PC += 1;
-                break;
+        if (this.PCmoved === false) {
+            let length = IR >> 6;
+            switch (length) {
+                case 2:
+                    this.PC += 3;
+                    break;
+                case 1:
+                    this.PC += 2;
+                    break;
+                default:
+                    this.PC += 1;
+                    break;
+            }
         }
     }
 }
