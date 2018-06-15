@@ -84,19 +84,19 @@ class CPU {
 
     CMP() {
         if (this.reg[this.operandA] > this.reg[this.operandB]) {
-            this.FL |= 0b010;  //greater flag set to 1
+            this.FL |= 0b010;  //greater flag set to 1  00000L[G]E
         } else {
             this.FL &= 0b101;  //greater flag cleared
         }
 
         if (this.reg[this.operandA] < this.reg[this.operandB]) {
-            this.FL |= 0b100;  //less flag set to 1
+            this.FL |= 0b100;  //less flag set to 1  00000[L]GE
         } else {
             this.FK &= 0b011;  //less flag cleard
         }
 
         if (this.reg[this.operandA] === this.reg[this.operandB]) {
-            this.FL |= 0b001;  //equal flag set to 1
+            this.FL |= 0b001;  //equal flag set to 1  00000LG[E]
         } else {
             this.FL &= 0b110;  //equal flag cleared
         }
@@ -104,6 +104,25 @@ class CPU {
 
     HLT() {
         this.stopClock();  //stops ticking
+    }
+
+    JEQ() {
+        if (this.FL & 0b1) {
+            this.PC = this.reg[this.operandA];
+            this.PCmoved = true;
+        }
+    }
+
+    JMP() {
+        this.PC = this.reg[this.operandA];
+        this.PCmoved = true;
+    }
+
+    JNE() {
+        if (!(this.FL & 0b1)) {
+            this.PC = this.reg[this.operandA];
+            this.PCmoved = true;
+        }
     }
 
     LDI() {
@@ -164,7 +183,11 @@ class CPU {
             0b10101000: () => this.alu('ADD'),
             0b10101010: () => this.alu('MUL'),
             0b01001000: () => this.CALL(),
+            0b10100000: () => this.CMP(),
             0b00000001: () => this.HLT(),
+            0b01010001: () => this.JEQ(),
+            0b01010000: () => this.JMP(),
+            0b01010010: () => this.JNE(),
             0b10011001: () => this.LDI(),
             0b01001100: () => this.POP(),
             0b01000011: () => this.PRN(),
