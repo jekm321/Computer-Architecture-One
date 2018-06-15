@@ -107,9 +107,23 @@ class CPU {
     }
 
     JEQ() {
-        if (this.FL & 0b1) {
+        if (this.FL & 0b1) {  // checks for true on E bit in flag 00000LG[E]
             this.PC = this.reg[this.operandA];
-            this.PCmoved = true;
+            this.PCmoved = true;  //if true, pc moved, dont increment
+        }
+    }
+
+    JGT() {
+        if(this.FL & 0b10) {  // checks for true on G bit in flag 00000L[G]E
+            this.PC = this.reg[this.operandA];
+            this.PCmoved = true;  //if true, pc moved, dont increment
+        }
+    }
+
+    JLT() {
+        if(this.FL & 0b100) {  // checks for true on L bit in flag 00000[L]GE
+            this.PC = this.reg[this.operandA];
+            this.PCmoved = true;  //if true, pc moved, dont increment
         }
     }
 
@@ -186,6 +200,8 @@ class CPU {
             0b10100000: () => this.CMP(),
             0b00000001: () => this.HLT(),
             0b01010001: () => this.JEQ(),
+            0b01010100: () => this.JGT(),
+            0b01010011: () => this.JLT(),
             0b01010000: () => this.JMP(),
             0b01010010: () => this.JNE(),
             0b10011001: () => this.LDI(),
